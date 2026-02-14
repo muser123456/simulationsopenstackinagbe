@@ -1,0 +1,1600 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MS Telecom OpenStack - Production Environment</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Inter:wght@400;500;600;700&display=swap');
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        :root {
+            --primary-blue: #0066cc;
+            --dark-blue: #004080;
+            --light-blue: #e6f2ff;
+            --accent-blue: #3399ff;
+            --bg-primary: #ffffff;
+            --bg-secondary: #f5f7fa;
+            --bg-tertiary: #e8ebed;
+            --text-primary: #1a1a1a;
+            --text-secondary: #4d4d4d;
+            --text-muted: #808080;
+            --border-color: #d1d5db;
+            --terminal-bg: #1a1f2e;
+            --terminal-text: #e8ebed;
+            --success-green: #0a7c42;
+            --warning-orange: #d97706;
+            --error-red: #dc2626;
+            --info-blue: #0066cc;
+        }
+        
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: var(--bg-secondary);
+            color: var(--text-primary);
+            min-height: 100vh;
+        }
+        
+        /* Login Screen - Modern Corporate Design */
+        .login-screen {
+            display: flex;
+            min-height: 100vh;
+            background: linear-gradient(135deg, #001a33 0%, #003d7a 50%, #0066cc 100%);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .login-screen::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -50%;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+            animation: pulse 15s ease-in-out infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { transform: scale(1) rotate(0deg); opacity: 0.3; }
+            50% { transform: scale(1.1) rotate(180deg); opacity: 0.5; }
+        }
+        
+        .login-wrapper {
+            display: flex;
+            width: 100%;
+            max-width: 1400px;
+            margin: auto;
+            padding: 40px;
+            gap: 60px;
+            align-items: center;
+            position: relative;
+            z-index: 1;
+        }
+        
+        .login-branding {
+            flex: 1;
+            color: white;
+            padding: 40px;
+        }
+        
+        .brand-logo-large {
+            width: 120px;
+            height: 120px;
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(10px);
+            border-radius: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 32px;
+            border: 2px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .brand-logo-large svg {
+            width: 72px;
+            height: 72px;
+        }
+        
+        .login-branding h1 {
+            font-size: 48px;
+            font-weight: 700;
+            margin-bottom: 16px;
+            line-height: 1.2;
+        }
+        
+        .login-branding .subtitle {
+            font-size: 24px;
+            font-weight: 400;
+            opacity: 0.9;
+            margin-bottom: 32px;
+        }
+        
+        .login-branding .description {
+            font-size: 16px;
+            line-height: 1.6;
+            opacity: 0.8;
+            max-width: 500px;
+        }
+        
+        .feature-list {
+            margin-top: 40px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        
+        .feature-item {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+        
+        .feature-icon {
+            width: 48px;
+            height: 48px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+        
+        .feature-text {
+            font-size: 15px;
+            line-height: 1.5;
+            opacity: 0.9;
+        }
+        
+        .login-container {
+            background: var(--bg-primary);
+            border-radius: 16px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            width: 100%;
+            max-width: 460px;
+            padding: 48px;
+            position: relative;
+        }
+        
+        .login-header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+        
+        .company-logo {
+            width: 80px;
+            height: 80px;
+            background: linear-gradient(135deg, var(--primary-blue) 0%, var(--accent-blue) 100%);
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 24px;
+            box-shadow: 0 8px 24px rgba(0, 102, 204, 0.3);
+        }
+        
+        .company-logo svg {
+            width: 48px;
+            height: 48px;
+        }
+        
+        .login-header h2 {
+            font-size: 28px;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 8px;
+        }
+        
+        .login-header p {
+            font-size: 15px;
+            color: var(--text-secondary);
+            font-weight: 500;
+        }
+        
+        .form-group {
+            margin-bottom: 24px;
+        }
+        
+        .form-label {
+            display: block;
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 8px;
+            letter-spacing: 0.2px;
+        }
+        
+        .form-input {
+            width: 100%;
+            padding: 14px 16px;
+            border: 2px solid var(--border-color);
+            border-radius: 8px;
+            font-size: 15px;
+            font-family: 'Inter', sans-serif;
+            transition: all 0.2s ease;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            font-weight: 500;
+        }
+        
+        .form-input:focus {
+            outline: none;
+            border-color: var(--primary-blue);
+            box-shadow: 0 0 0 4px rgba(0, 102, 204, 0.1);
+        }
+        
+        .form-input::placeholder {
+            color: var(--text-muted);
+            font-weight: 400;
+        }
+        
+        .login-button {
+            width: 100%;
+            padding: 14px 24px;
+            background: linear-gradient(135deg, var(--primary-blue) 0%, var(--accent-blue) 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 12px rgba(0, 102, 204, 0.3);
+            margin-top: 8px;
+        }
+        
+        .login-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0, 102, 204, 0.4);
+        }
+        
+        .login-button:active {
+            transform: translateY(0);
+        }
+        
+        .login-footer {
+            margin-top: 32px;
+            padding-top: 24px;
+            border-top: 1px solid var(--border-color);
+            text-align: center;
+        }
+        
+        .login-footer p {
+            font-size: 13px;
+            color: var(--text-muted);
+            line-height: 1.6;
+        }
+        
+        .login-footer a {
+            color: var(--primary-blue);
+            text-decoration: none;
+            font-weight: 600;
+        }
+        
+        .login-footer a:hover {
+            text-decoration: underline;
+        }
+        
+        .error-message {
+            background: #fef2f2;
+            border: 2px solid var(--error-red);
+            color: var(--error-red);
+            padding: 14px 16px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 500;
+            margin-bottom: 20px;
+            display: none;
+            animation: shake 0.4s ease;
+        }
+        
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-10px); }
+            75% { transform: translateX(10px); }
+        }
+        
+        /* Main Application */
+        .main-app {
+            display: none;
+            min-height: 100vh;
+        }
+        
+        /* Header */
+        .app-header {
+            background: var(--bg-primary);
+            border-bottom: 1px solid var(--border-color);
+            padding: 0;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+        }
+        
+        .header-content {
+            max-width: 1600px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 16px 32px;
+        }
+        
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 24px;
+        }
+        
+        .app-logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        
+        .logo-icon {
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, var(--primary-blue) 0%, var(--accent-blue) 100%);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+        }
+        
+        .logo-icon svg {
+            width: 24px;
+            height: 24px;
+        }
+        
+        .logo-text h1 {
+            font-size: 18px;
+            font-weight: 700;
+            color: var(--text-primary);
+        }
+        
+        .logo-text p {
+            font-size: 12px;
+            color: var(--text-secondary);
+            font-weight: 500;
+        }
+        
+        .environment-badge {
+            background: linear-gradient(135deg, #0a7c42 0%, #10b981 100%);
+            color: white;
+            padding: 6px 16px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+            box-shadow: 0 2px 8px rgba(10, 124, 66, 0.3);
+        }
+        
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+        
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 8px 16px;
+            background: var(--bg-secondary);
+            border-radius: 8px;
+        }
+        
+        .user-avatar {
+            width: 36px;
+            height: 36px;
+            background: linear-gradient(135deg, var(--primary-blue) 0%, var(--accent-blue) 100%);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 700;
+            font-size: 14px;
+        }
+        
+        .user-details {
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .user-name {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+        
+        .user-role {
+            font-size: 12px;
+            color: var(--text-secondary);
+        }
+        
+        .logout-btn {
+            padding: 8px 20px;
+            background: transparent;
+            color: var(--text-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .logout-btn:hover {
+            background: var(--bg-secondary);
+            border-color: var(--text-muted);
+        }
+        
+        /* Main Content */
+        .main-content {
+            max-width: 1600px;
+            margin: 0 auto;
+            padding: 32px;
+            display: grid;
+            grid-template-columns: 320px 1fr;
+            gap: 32px;
+        }
+        
+        /* Sidebar - Deployment Steps */
+        .sidebar {
+            background: var(--bg-primary);
+            border-radius: 12px;
+            padding: 24px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+            height: fit-content;
+            position: sticky;
+            top: 100px;
+        }
+        
+        .sidebar-header {
+            margin-bottom: 24px;
+            padding-bottom: 16px;
+            border-bottom: 2px solid var(--border-color);
+        }
+        
+        .sidebar-header h3 {
+            font-size: 16px;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 4px;
+        }
+        
+        .sidebar-header p {
+            font-size: 13px;
+            color: var(--text-secondary);
+        }
+        
+        .step-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+        
+        .step-card {
+            padding: 14px 16px;
+            background: var(--bg-secondary);
+            border-radius: 8px;
+            border-left: 4px solid var(--border-color);
+            transition: all 0.3s;
+            cursor: default;
+        }
+        
+        .step-card.active {
+            background: var(--light-blue);
+            border-left-color: var(--primary-blue);
+            box-shadow: 0 4px 12px rgba(0, 102, 204, 0.15);
+        }
+        
+        .step-card.completed {
+            background: #f0fdf4;
+            border-left-color: var(--success-green);
+        }
+        
+        .step-number {
+            font-size: 11px;
+            font-weight: 700;
+            color: var(--text-muted);
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+            margin-bottom: 4px;
+        }
+        
+        .step-card.active .step-number {
+            color: var(--primary-blue);
+        }
+        
+        .step-card.completed .step-number {
+            color: var(--success-green);
+        }
+        
+        .step-name {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+        
+        .controls {
+            margin-top: 24px;
+            padding-top: 20px;
+            border-top: 2px solid var(--border-color);
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+        
+        .btn {
+            padding: 12px 20px;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary-blue) 0%, var(--accent-blue) 100%);
+            color: white;
+            box-shadow: 0 4px 12px rgba(0, 102, 204, 0.3);
+        }
+        
+        .btn-primary:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(0, 102, 204, 0.4);
+        }
+        
+        .btn-secondary {
+            background: var(--bg-secondary);
+            color: var(--text-primary);
+            border: 2px solid var(--border-color);
+        }
+        
+        .btn-secondary:hover {
+            background: var(--bg-tertiary);
+        }
+        
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        
+        /* Main Panel */
+        .main-panel {
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+        }
+        
+        /* Dashboard Metrics */
+        .dashboard {
+            display: none;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 20px;
+        }
+        
+        .metric-card {
+            background: var(--bg-primary);
+            border-radius: 12px;
+            padding: 24px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+            border: 1px solid var(--border-color);
+        }
+        
+        .metric-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+        
+        .metric-label {
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .metric-icon {
+            width: 36px;
+            height: 36px;
+            background: var(--light-blue);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--primary-blue);
+        }
+        
+        .metric-value {
+            font-size: 32px;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 8px;
+        }
+        
+        .metric-progress {
+            height: 6px;
+            background: var(--bg-secondary);
+            border-radius: 3px;
+            overflow: hidden;
+            margin-top: 12px;
+        }
+        
+        .metric-progress-bar {
+            height: 100%;
+            background: linear-gradient(90deg, var(--primary-blue) 0%, var(--accent-blue) 100%);
+            border-radius: 3px;
+            transition: width 0.5s ease;
+        }
+        
+        /* Terminal */
+        .terminal-container {
+            background: var(--bg-primary);
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+            overflow: hidden;
+        }
+        
+        .terminal-header {
+            background: var(--terminal-bg);
+            padding: 16px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .terminal-title {
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--terminal-text);
+            font-family: 'IBM Plex Mono', monospace;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .terminal-controls {
+            display: flex;
+            gap: 8px;
+        }
+        
+        .terminal-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+        }
+        
+        .terminal-dot.red { background: #ff5f56; }
+        .terminal-dot.yellow { background: #ffbd2e; }
+        .terminal-dot.green { background: #27c93f; }
+        
+        .terminal {
+            background: var(--terminal-bg);
+            color: var(--terminal-text);
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 13px;
+            line-height: 1.6;
+            padding: 20px;
+            height: 500px;
+            overflow-y: auto;
+        }
+        
+        .terminal::-webkit-scrollbar {
+            width: 8px;
+        }
+        
+        .terminal::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.05);
+        }
+        
+        .terminal::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 4px;
+        }
+        
+        .terminal-line {
+            margin-bottom: 4px;
+        }
+        
+        .prompt {
+            color: #10b981;
+            font-weight: 600;
+        }
+        
+        .command {
+            color: #60a5fa;
+            font-weight: 500;
+        }
+        
+        .output {
+            color: var(--terminal-text);
+        }
+        
+        .success-text {
+            color: #10b981;
+            font-weight: 600;
+        }
+        
+        .error-text {
+            color: #ef4444;
+            font-weight: 600;
+        }
+        
+        .warning-text {
+            color: #f59e0b;
+            font-weight: 600;
+        }
+        
+        .info-text {
+            color: #3b82f6;
+            font-weight: 600;
+        }
+        
+        /* Instance Table */
+        .instance-table-container {
+            display: none;
+            background: var(--bg-primary);
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+            overflow: hidden;
+        }
+        
+        .table-header {
+            background: var(--bg-secondary);
+            padding: 20px 24px;
+            border-bottom: 2px solid var(--border-color);
+        }
+        
+        .table-header h3 {
+            font-size: 16px;
+            font-weight: 700;
+            color: var(--text-primary);
+        }
+        
+        .instance-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        
+        .instance-table th {
+            background: var(--bg-secondary);
+            padding: 14px 24px;
+            text-align: left;
+            font-size: 12px;
+            font-weight: 700;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            border-bottom: 2px solid var(--border-color);
+        }
+        
+        .instance-table td {
+            padding: 16px 24px;
+            font-size: 14px;
+            color: var(--text-primary);
+            border-bottom: 1px solid var(--border-color);
+        }
+        
+        .instance-table tr:last-child td {
+            border-bottom: none;
+        }
+        
+        .instance-table tr:hover {
+            background: var(--bg-secondary);
+        }
+        
+        .status-badge {
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            display: inline-block;
+        }
+        
+        .status-badge.active {
+            background: #d1fae5;
+            color: #065f46;
+        }
+        
+        /* Responsive Design */
+        @media (max-width: 1200px) {
+            .main-content {
+                grid-template-columns: 1fr;
+            }
+            
+            .sidebar {
+                position: relative;
+                top: 0;
+            }
+            
+            .login-wrapper {
+                flex-direction: column;
+                padding: 20px;
+            }
+            
+            .login-branding {
+                text-align: center;
+            }
+            
+            .brand-logo-large,
+            .feature-list {
+                margin-left: auto;
+                margin-right: auto;
+            }
+            
+            .login-branding h1 {
+                font-size: 36px;
+            }
+            
+            .login-branding .subtitle {
+                font-size: 20px;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .dashboard {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            
+            .header-content {
+                padding: 16px 20px;
+            }
+            
+            .main-content {
+                padding: 20px;
+            }
+            
+            .login-branding {
+                display: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Login Screen -->
+    <div class="login-screen" id="loginScreen">
+        <div class="login-wrapper">
+            <!-- Left Side - Branding -->
+            <div class="login-branding">
+                <div class="brand-logo-large">
+                    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M12 2L2 7L12 12L22 7L12 2Z" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        <path d="M2 17L12 22L22 17" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        <path d="M2 12L12 17L22 12" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                </div>
+                <h1>MS Telecom Cloud</h1>
+                <p class="subtitle">Enterprise Infrastructure Platform</p>
+                <p class="description">
+                    Advanced cloud orchestration and management system powered by OpenStack. 
+                    Deploy, manage, and scale your infrastructure with enterprise-grade reliability and performance.
+                </p>
+                
+                <div class="feature-list">
+                    <div class="feature-item">
+                        <div class="feature-icon">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M13 2L3 14h8l-1 8 10-12h-8l1-8z" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
+                        </div>
+                        <div class="feature-text">
+                            <strong>High Performance</strong><br>
+                            Optimized compute resources with advanced virtualization
+                        </div>
+                    </div>
+                    
+                    <div class="feature-item">
+                        <div class="feature-icon">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <rect x="3" y="3" width="7" height="7" stroke="white" stroke-width="2"/>
+                                <rect x="14" y="3" width="7" height="7" stroke="white" stroke-width="2"/>
+                                <rect x="3" y="14" width="7" height="7" stroke="white" stroke-width="2"/>
+                                <rect x="14" y="14" width="7" height="7" stroke="white" stroke-width="2"/>
+                            </svg>
+                        </div>
+                        <div class="feature-text">
+                            <strong>Scalable Architecture</strong><br>
+                            Flexible infrastructure that grows with your business needs
+                        </div>
+                    </div>
+                    
+                    <div class="feature-item">
+                        <div class="feature-icon">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
+                        </div>
+                        <div class="feature-text">
+                            <strong>Enterprise Security</strong><br>
+                            Advanced security protocols and compliance standards
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Right Side - Login Form -->
+            <div class="login-container">
+                <div class="login-header">
+                    <div class="company-logo">
+                        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M12 2L2 7L12 12L22 7L12 2Z" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                            <path d="M2 17L12 22L22 17" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                            <path d="M2 12L12 17L22 12" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                    </div>
+                    <h2>Sign In</h2>
+                    <p>Access OpenStack Control Panel</p>
+                </div>
+                
+                <div class="error-message" id="errorMessage">
+                    Invalid credentials. Please try again.
+                </div>
+                
+                <form id="loginForm">
+                    <div class="form-group">
+                        <label class="form-label" for="username">Username</label>
+                        <input 
+                            type="text" 
+                            id="username" 
+                            class="form-input" 
+                            placeholder="Enter your username"
+                            autocomplete="username"
+                            required
+                        >
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label" for="password">Password</label>
+                        <input 
+                            type="password" 
+                            id="password" 
+                            class="form-input" 
+                            placeholder="Enter your password"
+                            autocomplete="current-password"
+                            required
+                        >
+                    </div>
+                    
+                    <button type="submit" class="login-button">
+                        Sign In to Dashboard
+                    </button>
+                </form>
+                
+                <div class="login-footer">
+                    <p>
+                        <strong>Demo Credentials:</strong><br>
+                        Username: administrator | Password: inagbe2025
+                    </p>
+                    <p style="margin-top: 16px;">
+                        Need help? <a href="#">Contact Support</a>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Application -->
+    <div class="main-app" id="mainApp">
+        <!-- Header -->
+        <header class="app-header">
+            <div class="header-content">
+                <div class="header-left">
+                    <div class="app-logo">
+                        <div class="logo-icon">
+                            <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M12 2L2 7L12 12L22 7L12 2Z" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                <path d="M2 17L12 22L22 17" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                <path d="M2 12L12 17L22 12" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
+                        </div>
+                        <div class="logo-text">
+                            <h1>MS Telecom OpenStack</h1>
+                            <p>Infrastructure Management</p>
+                        </div>
+                    </div>
+                    <div class="environment-badge">Production Environment</div>
+                </div>
+                
+                <div class="header-right">
+                    <div class="user-info">
+                        <div class="user-avatar">AD</div>
+                        <div class="user-details">
+                            <div class="user-name">Administrator</div>
+                            <div class="user-role">System Admin</div>
+                        </div>
+                    </div>
+                    <button class="logout-btn" id="logoutBtn">Sign Out</button>
+                </div>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <div class="main-content">
+            <!-- Sidebar -->
+            <aside class="sidebar">
+                <div class="sidebar-header">
+                    <h3>Deployment Pipeline</h3>
+                    <p>8-Step Infrastructure Provisioning</p>
+                </div>
+                
+                <div class="step-list">
+                    <div class="step-card" data-step="0">
+                        <div class="step-number">Step 1</div>
+                        <div class="step-name">Authentication</div>
+                    </div>
+                    <div class="step-card" data-step="1">
+                        <div class="step-number">Step 2</div>
+                        <div class="step-name">Network Configuration</div>
+                    </div>
+                    <div class="step-card" data-step="2">
+                        <div class="step-number">Step 3</div>
+                        <div class="step-name">Security Groups</div>
+                    </div>
+                    <div class="step-card" data-step="3">
+                        <div class="step-number">Step 4</div>
+                        <div class="step-name">Storage Provisioning</div>
+                    </div>
+                    <div class="step-card" data-step="4">
+                        <div class="step-number">Step 5</div>
+                        <div class="step-name">Compute Resources</div>
+                    </div>
+                    <div class="step-card" data-step="5">
+                        <div class="step-number">Step 6</div>
+                        <div class="step-name">Application Deployment</div>
+                    </div>
+                    <div class="step-card" data-step="6">
+                        <div class="step-number">Step 7</div>
+                        <div class="step-name">Monitoring Setup</div>
+                    </div>
+                    <div class="step-card" data-step="7">
+                        <div class="step-number">Step 8</div>
+                        <div class="step-name">Validation</div>
+                    </div>
+                </div>
+                
+                <div class="controls">
+                    <button class="btn btn-primary" id="startBtn">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <polygon points="5 3 19 12 5 21 5 3" fill="currentColor"/>
+                        </svg>
+                        Start Deployment
+                    </button>
+                    <button class="btn btn-secondary" id="resetBtn">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M1 4v6h6M23 20v-6h-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                            <path d="M20.49 9A9 9 0 0 0 5.64 5.64L1 10m22 4l-4.64 4.36A9 9 0 0 1 3.51 15" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                        Reset Simulation
+                    </button>
+                </div>
+            </aside>
+
+            <!-- Main Panel -->
+            <main class="main-panel">
+                <!-- Dashboard Metrics -->
+                <div class="dashboard" id="dashboard">
+                    <div class="metric-card">
+                        <div class="metric-header">
+                            <span class="metric-label">Active Instances</span>
+                            <div class="metric-icon">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <rect x="2" y="3" width="20" height="14" rx="2" stroke="currentColor" stroke-width="2"/>
+                                    <path d="M8 21h8M12 17v4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                                </svg>
+                            </div>
+                        </div>
+                        <div class="metric-value" id="instanceCount">0</div>
+                    </div>
+                    
+                    <div class="metric-card">
+                        <div class="metric-header">
+                            <span class="metric-label">CPU Usage</span>
+                            <div class="metric-icon">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <rect x="4" y="4" width="16" height="16" rx="2" stroke="currentColor" stroke-width="2"/>
+                                    <rect x="9" y="9" width="6" height="6" stroke="currentColor" stroke-width="2"/>
+                                </svg>
+                            </div>
+                        </div>
+                        <div class="metric-value" id="cpuUsage">0%</div>
+                        <div class="metric-progress">
+                            <div class="metric-progress-bar" id="cpuProgress" style="width: 0%"></div>
+                        </div>
+                    </div>
+                    
+                    <div class="metric-card">
+                        <div class="metric-header">
+                            <span class="metric-label">Memory Usage</span>
+                            <div class="metric-icon">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M2 8h20M2 16h20M6 2v20M10 2v20M14 2v20M18 2v20" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                                </svg>
+                            </div>
+                        </div>
+                        <div class="metric-value" id="memUsage">0 GB</div>
+                        <div class="metric-progress">
+                            <div class="metric-progress-bar" id="memProgress" style="width: 0%"></div>
+                        </div>
+                    </div>
+                    
+                    <div class="metric-card">
+                        <div class="metric-header">
+                            <span class="metric-label">Network Traffic</span>
+                            <div class="metric-icon">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/>
+                                    <path d="M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" stroke="currentColor" stroke-width="2"/>
+                                </svg>
+                            </div>
+                        </div>
+                        <div class="metric-value" id="networkTraffic">0 MB/s</div>
+                    </div>
+                </div>
+
+                <!-- Terminal -->
+                <div class="terminal-container">
+                    <div class="terminal-header">
+                        <div class="terminal-title">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <polyline points="4 17 10 11 4 5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                <line x1="12" y1="19" x2="20" y2="19" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                            </svg>
+                            OpenStack CLI Terminal
+                        </div>
+                        <div class="terminal-controls">
+                            <div class="terminal-dot red"></div>
+                            <div class="terminal-dot yellow"></div>
+                            <div class="terminal-dot green"></div>
+                        </div>
+                    </div>
+                    <div class="terminal" id="terminal">
+                        <div class="terminal-line">
+                            <span class="prompt">administrator@openstack-controller-01:~$</span> 
+                            <span class="output">Ready for deployment initialization...</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Instance Table -->
+                <div class="instance-table-container" id="instanceTable">
+                    <div class="table-header">
+                        <h3>Deployed Instances</h3>
+                    </div>
+                    <table class="instance-table">
+                        <thead>
+                            <tr>
+                                <th>Instance Name</th>
+                                <th>IP Address</th>
+                                <th>Flavor</th>
+                                <th>Status</th>
+                                <th>Uptime</th>
+                                <th>vCPUs</th>
+                                <th>RAM</th>
+                            </tr>
+                        </thead>
+                        <tbody id="instanceTableBody">
+                        </tbody>
+                    </table>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <script>
+        // Login functionality
+        const loginForm = document.getElementById('loginForm');
+        const loginScreen = document.getElementById('loginScreen');
+        const mainApp = document.getElementById('mainApp');
+        const errorMessage = document.getElementById('errorMessage');
+        const logoutBtn = document.getElementById('logoutBtn');
+
+        loginForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+
+            if (username === 'administrator' && password === 'inagbe2025') {
+                loginScreen.style.display = 'none';
+                mainApp.style.display = 'block';
+                errorMessage.style.display = 'none';
+            } else {
+                errorMessage.style.display = 'block';
+                document.getElementById('password').value = '';
+            }
+        });
+
+        logoutBtn.addEventListener('click', () => {
+            mainApp.style.display = 'none';
+            loginScreen.style.display = 'flex';
+            document.getElementById('username').value = '';
+            document.getElementById('password').value = '';
+            resetSimulation();
+        });
+
+        // Deployment simulation
+        const terminal = document.getElementById('terminal');
+        const dashboard = document.getElementById('dashboard');
+        const instanceTable = document.getElementById('instanceTable');
+        const instanceTableBody = document.getElementById('instanceTableBody');
+        const startBtn = document.getElementById('startBtn');
+        const resetBtn = document.getElementById('resetBtn');
+        const steps = document.querySelectorAll('.step-card');
+
+        let isRunning = false;
+
+        const deploymentSteps = [
+            {
+                name: 'Authentication',
+                commands: [
+                    { text: '', type: 'output', delay: 500 },
+                    { text: '# STEP 1: OpenStack Authentication', type: 'info', delay: 800 },
+                    { text: 'administrator@openstack-controller-01:~$ export OS_USERNAME=administrator', type: 'command', delay: 1000 },
+                    { text: 'administrator@openstack-controller-01:~$ export OS_PROJECT_NAME=ms-telecom', type: 'command', delay: 800 },
+                    { text: 'administrator@openstack-controller-01:~$ export OS_AUTH_URL=https://keystone.mstelecom.cloud:5000/v3', type: 'command', delay: 1200 },
+                    { text: '', type: 'output', delay: 600 },
+                    { text: 'administrator@openstack-controller-01:~$ openstack token issue', type: 'command', delay: 1500 },
+                    { text: '+------------+------------------------------------------------------------------+', type: 'output', delay: 300 },
+                    { text: '| Field      | Value                                                            |', type: 'output', delay: 150 },
+                    { text: '+------------+------------------------------------------------------------------+', type: 'output', delay: 150 },
+                    { text: '| expires    | 2026-02-13T04:15:22+0000                                         |', type: 'output', delay: 200 },
+                    { text: '| id         | gAAAAABmKx_ioZvCE8Yx2RqN3HfPkLmJ9sT7uV4wX6yZ5aB8cD1eF0gH2iJ3k   |', type: 'output', delay: 200 },
+                    { text: '| project_id | 5a9f8c7d6e4b3a2f1e0d9c8b7a6f5e4d                             |', type: 'output', delay: 200 },
+                    { text: '| user_id    | 1a2b3c4d5e6f7g8h9i0j1k2l3m4n5o6p                             |', type: 'output', delay: 200 },
+                    { text: '+------------+------------------------------------------------------------------+', type: 'output', delay: 300 },
+                    { text: '', type: 'output', delay: 700 },
+                    { text: '[SUCCESS] Authentication completed - Token valid for 24 hours', type: 'success', delay: 600 },
+                ]
+            },
+            {
+                name: 'Network',
+                commands: [
+                    { text: '', type: 'output', delay: 500 },
+                    { text: '# STEP 2: Network Infrastructure Configuration', type: 'info', delay: 700 },
+                    { text: 'administrator@openstack-controller-01:~$ openstack network create --project ms-telecom mstelecom-internal-network', type: 'command', delay: 2000 },
+                    { text: 'Created network: mstelecom-internal-network (ID: net-4f5a6b7c)', type: 'output', delay: 800 },
+                    { text: '', type: 'output', delay: 500 },
+                    { text: 'administrator@openstack-controller-01:~$ openstack subnet create --network mstelecom-internal-network --subnet-range 10.20.0.0/24 --gateway 10.20.0.1 --dns-nameserver 8.8.8.8 mstelecom-subnet', type: 'command', delay: 2500 },
+                    { text: 'Created subnet: mstelecom-subnet (10.20.0.0/24)', type: 'output', delay: 800 },
+                    { text: '', type: 'output', delay: 600 },
+                    { text: 'administrator@openstack-controller-01:~$ openstack router create mstelecom-router', type: 'command', delay: 1500 },
+                    { text: 'Created router: mstelecom-router (ID: rtr-9e8d7c6b)', type: 'output', delay: 700 },
+                    { text: '', type: 'output', delay: 500 },
+                    { text: 'administrator@openstack-controller-01:~$ openstack router add subnet mstelecom-router mstelecom-subnet', type: 'command', delay: 1800 },
+                    { text: 'Added subnet mstelecom-subnet to router mstelecom-router', type: 'output', delay: 700 },
+                    { text: '', type: 'output', delay: 600 },
+                    { text: 'administrator@openstack-controller-01:~$ openstack router set --external-gateway external-network mstelecom-router', type: 'command', delay: 2000 },
+                    { text: 'Set external gateway for router mstelecom-router', type: 'output', delay: 700 },
+                    { text: '', type: 'output', delay: 700 },
+                    { text: '[SUCCESS] Network infrastructure configured with routing and external connectivity', type: 'success', delay: 600 },
+                ]
+            },
+            {
+                name: 'Security',
+                commands: [
+                    { text: '', type: 'output', delay: 500 },
+                    { text: '# STEP 3: Security Group Configuration', type: 'info', delay: 700 },
+                    { text: 'administrator@openstack-controller-01:~$ openstack security group create mstelecom-web-security --description "Web server security group for ms-telecom project"', type: 'command', delay: 2200 },
+                    { text: 'Created security group: mstelecom-web-security', type: 'output', delay: 800 },
+                    { text: '', type: 'output', delay: 600 },
+                    { text: 'administrator@openstack-controller-01:~$ openstack security group rule create --protocol tcp --dst-port 80 --remote-ip 0.0.0.0/0 mstelecom-web-security', type: 'command', delay: 2000 },
+                    { text: 'Created security group rule: Allow HTTP (port 80) from anywhere', type: 'output', delay: 700 },
+                    { text: '', type: 'output', delay: 500 },
+                    { text: 'administrator@openstack-controller-01:~$ openstack security group rule create --protocol tcp --dst-port 443 --remote-ip 0.0.0.0/0 mstelecom-web-security', type: 'command', delay: 2000 },
+                    { text: 'Created security group rule: Allow HTTPS (port 443) from anywhere', type: 'output', delay: 700 },
+                    { text: '', type: 'output', delay: 500 },
+                    { text: 'administrator@openstack-controller-01:~$ openstack security group rule create --protocol tcp --dst-port 22 --remote-ip 10.0.0.0/8 mstelecom-web-security', type: 'command', delay: 2000 },
+                    { text: 'Created security group rule: Allow SSH (port 22) from internal network', type: 'output', delay: 700 },
+                    { text: '', type: 'output', delay: 600 },
+                    { text: 'administrator@openstack-controller-01:~$ openstack security group create mstelecom-database-security --description "Database server security group"', type: 'command', delay: 2000 },
+                    { text: 'Created security group: mstelecom-database-security', type: 'output', delay: 700 },
+                    { text: '', type: 'output', delay: 500 },
+                    { text: 'administrator@openstack-controller-01:~$ openstack security group rule create --protocol tcp --dst-port 5432 --remote-ip 10.20.0.0/24 mstelecom-database-security', type: 'command', delay: 2000 },
+                    { text: 'Created security group rule: Allow PostgreSQL (port 5432) from internal subnet', type: 'output', delay: 700 },
+                    { text: '', type: 'output', delay: 700 },
+                    { text: '[SUCCESS] Security groups configured with least-privilege access controls', type: 'success', delay: 600 },
+                ]
+            },
+            {
+                name: 'Storage',
+                commands: [
+                    { text: '', type: 'output', delay: 500 },
+                    { text: '# STEP 4: Storage Volume Provisioning', type: 'info', delay: 700 },
+                    { text: 'administrator@openstack-controller-01:~$ openstack volume create --size 100 --type ssd --description "Primary application volume" mstelecom-app-volume', type: 'command', delay: 2200 },
+                    { text: 'Creating volume... (This may take a moment)', type: 'output', delay: 1500 },
+                    { text: '+---------------------+--------------------------------------+', type: 'output', delay: 300 },
+                    { text: '| Field               | Value                                |', type: 'output', delay: 150 },
+                    { text: '+---------------------+--------------------------------------+', type: 'output', delay: 150 },
+                    { text: '| id                  | vol-a1b2c3d4-e5f6-g7h8-i9j0-k1l2m3n4 |', type: 'output', delay: 200 },
+                    { text: '| size                | 100                                  |', type: 'output', delay: 150 },
+                    { text: '| status              | creating                             |', type: 'output', delay: 150 },
+                    { text: '| type                | ssd                                  |', type: 'output', delay: 150 },
+                    { text: '+---------------------+--------------------------------------+', type: 'output', delay: 300 },
+                    { text: '', type: 'output', delay: 1200 },
+                    { text: 'Volume status: available', type: 'output', delay: 600 },
+                    { text: '', type: 'output', delay: 600 },
+                    { text: 'administrator@openstack-controller-01:~$ openstack volume create --size 200 --type ssd --description "Database storage volume" mstelecom-db-volume', type: 'command', delay: 2200 },
+                    { text: 'Creating volume... (This may take a moment)', type: 'output', delay: 1500 },
+                    { text: 'Volume status: available', type: 'output', delay: 800 },
+                    { text: '', type: 'output', delay: 700 },
+                    { text: '[SUCCESS] Storage volumes provisioned - 300 GB SSD storage allocated', type: 'success', delay: 600 },
+                ]
+            },
+            {
+                name: 'Compute',
+                commands: [
+                    { text: '', type: 'output', delay: 500 },
+                    { text: '# STEP 5: Compute Instance Deployment', type: 'info', delay: 700 },
+                    { text: 'administrator@openstack-controller-01:~$ openstack server create --flavor m1.medium --image ubuntu-22.04-lts --network mstelecom-internal-network --security-group mstelecom-web-security --key-name production-key mstelecom-web-server-01', type: 'command', delay: 3000 },
+                    { text: 'Launching instance... Allocating resources...', type: 'output', delay: 2000 },
+                    { text: '+-----------------------------+--------------------------------------+', type: 'output', delay: 300 },
+                    { text: '| Property                    | Value                                |', type: 'output', delay: 150 },
+                    { text: '+-----------------------------+--------------------------------------+', type: 'output', delay: 150 },
+                    { text: '| id                          | d4e5f6g7-h8i9-j0k1-l2m3-n4o5p6q7r8s9 |', type: 'output', delay: 200 },
+                    { text: '| name                        | mstelecom-web-server-01              |', type: 'output', delay: 150 },
+                    { text: '| flavor                      | m1.medium (2 vCPUs, 4 GB RAM)        |', type: 'output', delay: 150 },
+                    { text: '| image                       | ubuntu-22.04-lts                     |', type: 'output', delay: 150 },
+                    { text: '| status                      | BUILD                                |', type: 'output', delay: 150 },
+                    { text: '+-----------------------------+--------------------------------------+', type: 'output', delay: 300 },
+                    { text: '', type: 'output', delay: 1500 },
+                    { text: 'Instance status: ACTIVE', type: 'output', delay: 1000 },
+                    { text: 'Assigned IP: 10.20.0.15', type: 'output', delay: 600 },
+                    { text: '', type: 'output', delay: 700 },
+                    { text: 'administrator@openstack-controller-01:~$ openstack server create --flavor l1.large --image ubuntu-22.04-lts --network mstelecom-internal-network --security-group mstelecom-database-security --key-name production-key mstelecom-database-server', type: 'command', delay: 3000 },
+                    { text: 'Launching instance... Allocating resources...', type: 'output', delay: 2000 },
+                    { text: 'Instance status: ACTIVE', type: 'output', delay: 1200 },
+                    { text: 'Assigned IP: 10.20.0.16', type: 'output', delay: 600 },
+                    { text: '', type: 'output', delay: 700 },
+                    { text: 'administrator@openstack-controller-01:~$ openstack server add volume mstelecom-web-server-01 mstelecom-app-volume', type: 'command', delay: 1800 },
+                    { text: 'Attached volume mstelecom-app-volume to mstelecom-web-server-01', type: 'output', delay: 700 },
+                    { text: '', type: 'output', delay: 500 },
+                    { text: 'administrator@openstack-controller-01:~$ openstack server add volume mstelecom-database-server mstelecom-db-volume', type: 'command', delay: 1800 },
+                    { text: 'Attached volume mstelecom-db-volume to mstelecom-database-server', type: 'output', delay: 700 },
+                    { text: '', type: 'output', delay: 800 },
+                    { text: '[SUCCESS] Compute instances deployed and storage volumes attached', type: 'success', delay: 600 },
+                ]
+            },
+            {
+                name: 'Deployment',
+                commands: [
+                    { text: '', type: 'output', delay: 500 },
+                    { text: '# STEP 6: Application Deployment and Configuration', type: 'info', delay: 700 },
+                    { text: 'ubuntu@mstelecom-web-server-01:~$ sudo apt update && sudo apt install -y nginx postgresql-client python3-pip', type: 'command', delay: 2500 },
+                    { text: 'Reading package lists... Done', type: 'output', delay: 1000 },
+                    { text: 'Building dependency tree... Done', type: 'output', delay: 800 },
+                    { text: 'Installing packages...', type: 'output', delay: 1200 },
+                    { text: '', type: 'output', delay: 600 },
+                    { text: 'ubuntu@mstelecom-web-server-01:~$ sudo systemctl start nginx', type: 'command', delay: 1200 },
+                    { text: 'ubuntu@mstelecom-web-server-01:~$ sudo systemctl enable nginx', type: 'command', delay: 1000 },
+                    { text: '', type: 'output', delay: 600 },
+                    { text: '[SUCCESS] Nginx web server installed and running', type: 'success', delay: 600 },
+                    { text: '', type: 'output', delay: 700 },
+                    { text: 'ubuntu@mstelecom-database-server:~$ sudo apt install -y postgresql-14', type: 'command', delay: 2000 },
+                    { text: 'Installing PostgreSQL 14...', type: 'output', delay: 1500 },
+                    { text: '', type: 'output', delay: 600 },
+                    { text: 'ubuntu@mstelecom-database-server:~$ sudo systemctl start postgresql', type: 'command', delay: 1200 },
+                    { text: 'ubuntu@mstelecom-database-server:~$ sudo -u postgres createdb mstelecom_production', type: 'command', delay: 1500 },
+                    { text: '', type: 'output', delay: 600 },
+                    { text: '[SUCCESS] PostgreSQL database server configured', type: 'success', delay: 600 },
+                    { text: '', type: 'output', delay: 700 },
+                    { text: 'ubuntu@mstelecom-web-server-01:~$ git clone https://github.com/mstelecom/production-app.git', type: 'command', delay: 2000 },
+                    { text: 'Cloning into production-app...', type: 'output', delay: 1000 },
+                    { text: 'ubuntu@mstelecom-web-server-01:~$ cd production-app && pip3 install -r requirements.txt', type: 'command', delay: 2000 },
+                    { text: 'Installing dependencies...', type: 'output', delay: 1500 },
+                    { text: 'ubuntu@mstelecom-web-server-01:~$ python3 app.py &', type: 'command', delay: 1200 },
+                    { text: 'Application server started on port 5000', type: 'output', delay: 800 },
+                    { text: '', type: 'output', delay: 700 },
+                    { text: '[SUCCESS] Application deployed and running', type: 'success', delay: 600 },
+                ]
+            },
+            {
+                name: 'Monitoring',
+                commands: [
+                    { text: '', type: 'output', delay: 500 },
+                    { text: '# STEP 7: Monitoring and Observability Configuration', type: 'info', delay: 700 },
+                    { text: 'ubuntu@mstelecom-web-server-01:~$ wget https://github.com/prometheus/node_exporter/releases/download/v1.7.0/node_exporter.tar.gz', type: 'command', delay: 2000 },
+                    { text: '', type: 'output', delay: 500 },
+                    { text: 'ubuntu@mstelecom-web-server-01:~$ sudo systemctl start node_exporter', type: 'command', delay: 1200 },
+                    { text: '', type: 'output', delay: 600 },
+                    { text: '[SUCCESS] Node Exporter installed and running on port 9100', type: 'success', delay: 600 },
+                    { text: '', type: 'output', delay: 700 },
+                    { text: 'ubuntu@mstelecom-web-server-01:~$ curl http://localhost:9100/metrics | grep node_cpu', type: 'command', delay: 1500 },
+                    { text: 'node_cpu_seconds_total{cpu="0",mode="idle"} 1847.23', type: 'output', delay: 400 },
+                    { text: 'node_memory_MemTotal_bytes 4.294967296e+09', type: 'output', delay: 400 },
+                    { text: '', type: 'output', delay: 600 },
+                    { text: '[SUCCESS] System metrics being exported correctly', type: 'success', delay: 600 },
+                    { text: '[SUCCESS] Monitoring configured on all instances', type: 'success', delay: 500 },
+                ]
+            },
+            {
+                name: 'Validation',
+                commands: [
+                    { text: '', type: 'output', delay: 500 },
+                    { text: '# STEP 8: Final Validation and Health Checks', type: 'info', delay: 700 },
+                    { text: 'administrator@openstack-controller-01:~$ openstack server list', type: 'command', delay: 1200 },
+                    { text: '+--------------------------------------+---------------------------+--------+', type: 'output', delay: 200 },
+                    { text: '| ID                                   | Name                      | Status |', type: 'output', delay: 100 },
+                    { text: '+--------------------------------------+---------------------------+--------+', type: 'output', delay: 100 },
+                    { text: '| d4e5f6g7-h8i9-j0k1-l2m3-n4o5p6q7r8s9 | mstelecom-web-server-01   | ACTIVE |', type: 'output', delay: 200 },
+                    { text: '| e5f6g7h8-i9j0-k1l2-m3n4-o5p6q7r8s9t0 | mstelecom-database-server | ACTIVE |', type: 'output', delay: 200 },
+                    { text: '+--------------------------------------+---------------------------+--------+', type: 'output', delay: 200 },
+                    { text: '', type: 'output', delay: 700 },
+                    { text: 'ubuntu@mstelecom-web-server-01:~$ ping -c 3 10.20.0.16', type: 'command', delay: 1500 },
+                    { text: '64 bytes from 10.20.0.16: icmp_seq=1 ttl=64 time=0.524 ms', type: 'output', delay: 1000 },
+                    { text: '64 bytes from 10.20.0.16: icmp_seq=2 ttl=64 time=0.412 ms', type: 'output', delay: 1000 },
+                    { text: '64 bytes from 10.20.0.16: icmp_seq=3 ttl=64 time=0.398 ms', type: 'output', delay: 1000 },
+                    { text: '', type: 'output', delay: 600 },
+                    { text: '[SUCCESS] Inter-instance connectivity verified', type: 'success', delay: 600 },
+                    { text: '', type: 'output', delay: 800 },
+                    { text: '================================================================================', type: 'success', delay: 400 },
+                    { text: '  DEPLOYMENT COMPLETED SUCCESSFULLY', type: 'success', delay: 600 },
+                    { text: '================================================================================', type: 'success', delay: 400 },
+                    { text: '', type: 'output', delay: 400 },
+                    { text: 'Infrastructure Summary:', type: 'info', delay: 600 },
+                    { text: '  Project: ms-telecom', type: 'output', delay: 300 },
+                    { text: '  Total Instances: 2 (ACTIVE)', type: 'output', delay: 300 },
+                    { text: '  Allocated Resources: 6 vCPUs, 12 GB RAM, 300 GB Storage', type: 'output', delay: 300 },
+                    { text: '  Application Status: Online', type: 'output', delay: 300 },
+                    { text: '', type: 'output', delay: 400 },
+                    { text: 'Total Deployment Time: 5 minutes 47 seconds', type: 'info', delay: 600 },
+                ]
+            }
+        ];
+
+        function addTerminalLine(text, type = 'output') {
+            const line = document.createElement('div');
+            line.className = 'terminal-line';
+            
+            let className = type;
+            if (type === 'command') {
+                if (text.includes('administrator@') || text.includes('ubuntu@')) {
+                    const parts = text.split('$ ');
+                    if (parts.length === 2) {
+                        line.innerHTML = `<span class="prompt">${parts[0]}$</span> <span class="command">${parts[1]}</span>`;
+                    } else {
+                        line.innerHTML = `<span class="command">${text}</span>`;
+                    }
+                } else {
+                    line.innerHTML = `<span class="command">${text}</span>`;
+                }
+            } else if (type === 'success') {
+                line.innerHTML = `<span class="success-text">${text}</span>`;
+            } else if (type === 'error') {
+                line.innerHTML = `<span class="error-text">${text}</span>`;
+            } else if (type === 'warning') {
+                line.innerHTML = `<span class="warning-text">${text}</span>`;
+            } else if (type === 'info') {
+                line.innerHTML = `<span class="info-text">${text}</span>`;
+            } else {
+                line.innerHTML = `<span class="output">${text}</span>`;
+            }
+            
+            terminal.appendChild(line);
+            terminal.scrollTop = terminal.scrollHeight;
+        }
+
+        async function runStep(stepIndex) {
+            const step = deploymentSteps[stepIndex];
+            const stepCard = document.querySelector(`[data-step="${stepIndex}"]`);
+            
+            // Mark step as active
+            stepCard.classList.add('active');
+            
+            // Run commands
+            for (const cmd of step.commands) {
+                await new Promise(resolve => setTimeout(resolve, cmd.delay));
+                addTerminalLine(cmd.text, cmd.type);
+            }
+            
+            // Mark step as completed
+            stepCard.classList.remove('active');
+            stepCard.classList.add('completed');
+            
+            // Update metrics based on step
+            if (stepIndex === 4) { // Compute step
+                updateMetrics(2, 25, 6, 45);
+                showInstanceTable();
+            } else if (stepIndex === 7) { // Final validation
+                updateMetrics(2, 32, 10.5, 87);
+            }
+        }
+
+        function updateMetrics(instances, cpu, mem, network) {
+            document.getElementById('instanceCount').textContent = instances;
+            document.getElementById('cpuUsage').textContent = cpu + '%';
+            document.getElementById('cpuProgress').style.width = cpu + '%';
+            document.getElementById('memUsage').textContent = mem.toFixed(1) + ' GB';
+            document.getElementById('memProgress').style.width = (mem / 12 * 100) + '%';
+            document.getElementById('networkTraffic').textContent = network + ' MB/s';
+            dashboard.style.display = 'grid';
+        }
+
+        function showInstanceTable() {
+            const instances = [
+                { name: 'mstelecom-web-server-01', ip: '10.20.0.15', flavor: 'm1.medium', status: 'ACTIVE', uptime: '7m 23s', vcpus: 2, ram: '4 GB' },
+                { name: 'mstelecom-database-server', ip: '10.20.0.16', flavor: 'l1.large', status: 'ACTIVE', uptime: '6m 18s', vcpus: 4, ram: '8 GB' }
+            ];
+            
+            instanceTableBody.innerHTML = '';
+            instances.forEach(inst => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${inst.name}</td>
+                    <td>${inst.ip}</td>
+                    <td>${inst.flavor}</td>
+                    <td><span class="status-badge active">${inst.status}</span></td>
+                    <td>${inst.uptime}</td>
+                    <td>${inst.vcpus}</td>
+                    <td>${inst.ram}</td>
+                `;
+                instanceTableBody.appendChild(row);
+            });
+            
+            instanceTable.style.display = 'block';
+        }
+
+        async function runDeployment() {
+            isRunning = true;
+            startBtn.disabled = true;
+            
+            for (let i = 0; i < deploymentSteps.length; i++) {
+                await runStep(i);
+            }
+            
+            isRunning = false;
+            startBtn.disabled = false;
+        }
+
+        function resetSimulation() {
+            terminal.innerHTML = '<div class="terminal-line"><span class="prompt">administrator@openstack-controller-01:~$</span> <span class="output">Ready for deployment initialization...</span></div>';
+            
+            steps.forEach(step => {
+                step.classList.remove('active', 'completed');
+            });
+            
+            dashboard.style.display = 'none';
+            instanceTable.style.display = 'none';
+            instanceTableBody.innerHTML = '';
+            
+            document.getElementById('instanceCount').textContent = '0';
+            document.getElementById('cpuUsage').textContent = '0%';
+            document.getElementById('cpuProgress').style.width = '0%';
+            document.getElementById('memUsage').textContent = '0 GB';
+            document.getElementById('memProgress').style.width = '0%';
+            document.getElementById('networkTraffic').textContent = '0 MB/s';
+            
+            isRunning = false;
+            startBtn.disabled = false;
+        }
+
+        startBtn.addEventListener('click', () => {
+            if (!isRunning) {
+                runDeployment();
+            }
+        });
+
+        resetBtn.addEventListener('click', resetSimulation);
+    </script>
+</body>
+</html>
